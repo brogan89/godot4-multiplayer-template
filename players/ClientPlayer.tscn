@@ -1,6 +1,7 @@
-[gd_scene load_steps=5 format=3 uid="uid://dp0u7dohrllcb"]
+[gd_scene load_steps=6 format=3 uid="uid://dp0u7dohrllcb"]
 
 [ext_resource type="Script" path="res://client/ClientPlayer.cs" id="1_c24d8"]
+[ext_resource type="Script" path="res://client/CameraController.cs" id="2_a5gib"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_n5ck7"]
 resource_local_to_scene = true
@@ -13,9 +14,26 @@ albedo_color = Color(1, 0, 1, 1)
 [node name="Player" type="CharacterBody3D"]
 script = ExtResource("1_c24d8")
 
+[node name="CameraRotAxisLateral" type="Node3D" parent="."]
+script = ExtResource("2_a5gib")
+metadata/_edit_lock_ = true
+
+[node name="CameraRotAxisVertical" type="Node3D" parent="CameraRotAxisLateral"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3, 0)
+
+[node name="Camera" type="Camera3D" parent="CameraRotAxisLateral/CameraRotAxisVertical"]
+current = true
+fov = 70.0
+near = 0.01
+
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 material_override = SubResource("StandardMaterial3D_n5ck7")
 mesh = SubResource("CapsuleMesh_x0vba")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("CapsuleShape3D_avjc0")
+metadata/_edit_lock_ = true
+
+[node name="Node3D" type="Node3D" parent="."]
+
+[node name="RotationHelperHorizontal" type="Node3D" parent="."]
