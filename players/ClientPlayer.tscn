@@ -2,14 +2,13 @@
 
 [ext_resource type="Script" path="res://client/ClientPlayer.cs" id="1_c24d8"]
 [ext_resource type="Script" path="res://client/CameraController.cs" id="2_a5gib"]
+[ext_resource type="Shape3D" uid="uid://bnoosrnvcwqj7" path="res://shared/PlayerCollisionShape.tres" id="3_y5qn2"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_n5ck7"]
 resource_local_to_scene = true
 albedo_color = Color(1, 0, 1, 1)
 
 [sub_resource type="CapsuleMesh" id="CapsuleMesh_x0vba"]
-
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_avjc0"]
 
 [node name="Player" type="CharacterBody3D"]
 script = ExtResource("1_c24d8")
@@ -31,9 +30,7 @@ material_override = SubResource("StandardMaterial3D_n5ck7")
 mesh = SubResource("CapsuleMesh_x0vba")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
-shape = SubResource("CapsuleShape3D_avjc0")
+shape = ExtResource("3_y5qn2")
 metadata/_edit_lock_ = true
-
-[node name="Node3D" type="Node3D" parent="."]
 
 [node name="RotationHelperHorizontal" type="Node3D" parent="."]
