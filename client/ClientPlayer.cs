@@ -11,7 +11,7 @@ using System.Linq;
 */
 public partial class ClientPlayer : CharacterBody3D
 {
-    private readonly List<LocalInput> _userInputs = new();
+    private readonly List<PlayerInput> _userInputs = new();
 
     private int _networkId = -1;
     private int _lastStampReceived = 0;
@@ -36,21 +36,21 @@ public partial class ClientPlayer : CharacterBody3D
         if (_autoMoveEnabled)
         {
             SolveAutoMove();
-            userInput.Input = _automoveInput;
+            userInput.Key = _automoveInput;
         }
         _userInputs.Add(userInput);
         SendInputs(currentTick);
-        AdvancePhysics(userInput.Input);
+        AdvancePhysics(userInput);
     }
 
     // Applies inputs ahead of the server (Prediction)
-    private void AdvancePhysics(byte input)
+    private void AdvancePhysics(PlayerInput input)
     {
         this.Velocity = PlayerMovement.ComputeMotion(
             this.GetRid(),
             this.GlobalTransform,
             this.Velocity,
-            PlayerMovement.InputToDirection(input));
+            PlayerMovement.InputToDirection(input.Key));
 
         Position += this.Velocity * PlayerMovement.FrameDelta;
     }
@@ -78,7 +78,7 @@ public partial class ClientPlayer : CharacterBody3D
                 this.GetRid(),
                 expectedTransform,
                 expectedVelocity,
-                PlayerMovement.InputToDirection(userInput.Input));
+                PlayerMovement.InputToDirection(userInput.Key));
 
             expectedTransform.Origin += expectedVelocity * PlayerMovement.FrameDelta;
         }
@@ -114,7 +114,7 @@ public partial class ClientPlayer : CharacterBody3D
         var userCmd = new NetMessage.UserCommand
         {
             Tick = currentTick,
-            Inputs = _userInputs.Select(i => i.Input).ToArray()
+            Inputs = _userInputs
         };
 
         if (this.IsMultiplayerAuthority() && Multiplayer.GetUniqueId() != 1)
@@ -126,7 +126,7 @@ public partial class ClientPlayer : CharacterBody3D
         }
     }
 
-    private static LocalInput GenerateUserInput(int tick)
+    private static PlayerInput GenerateUserInput(int tick)
     {
         byte keys = 0;
 
@@ -137,10 +137,10 @@ public partial class ClientPlayer : CharacterBody3D
         if (Input.IsActionPressed("space")) keys |= (byte)InputFlags.Space;
         if (Input.IsActionPressed("shift")) keys |= (byte)InputFlags.Shift;
 
-        var userInput = new LocalInput
+        PlayerInput userInput = new()
         {
             Tick = tick,
-            Input = keys
+            Key = keys
         };
 
         return userInput;
@@ -156,11 +156,5 @@ public partial class ClientPlayer : CharacterBody3D
         ImGui.Text($"Misspredictions {_misspredictionCounter}");
         ImGui.Checkbox("Automove?", ref _autoMoveEnabled);
         ImGui.End();
-    }
-
-    private struct LocalInput
-    {
-        public int Tick;
-        public byte Input;
     }
 }

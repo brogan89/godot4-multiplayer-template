@@ -1,9 +1,11 @@
+using System.Collections.Generic;
+using System.Runtime.Serialization;
 using Godot;
 using MemoryPack;
 
 namespace NetMessage
 {
-    [MemoryPackable]
+    [MemoryPackable(GenerateType.NoGenerate)]
     [MemoryPackUnion(0, typeof(UserCommand))]
     [MemoryPackUnion(1, typeof(GameSnapshot))]
     [MemoryPackUnion(2, typeof(Sync))]
@@ -23,7 +25,17 @@ namespace NetMessage
     {
         public int Tick;    // This is the Tick stamp for the latest generated input (Inputs[Inputs.Length])
                             // all other Ticks are (Tick - index)
-        public byte[] Inputs;
+
+        public List<PlayerInput> Inputs;
+    }
+
+    [MemoryPackable]
+    public partial class PlayerInput
+    {
+        [MemoryPackIgnore]
+        public int Tick; // No need to send this over the network, as it is already sent with UserCommand
+
+        public byte Key;
     }
 
     // Game state for a given point in time

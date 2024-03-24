@@ -2,20 +2,20 @@ using Godot;
 using System.Collections.Generic;
 using ImGuiNET;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Data;
+using NetMessage;
 
 public partial class ServerPlayer : CharacterBody3D
 {
 	public int MultiplayerID { get; set; } = 0;
 	public int InstantLatency { get; set; } = 0;
 
-	private Dictionary<int, byte> _pendingInputs = new();
+	private Dictionary<int, PlayerInput> _pendingInputs = new();
 	private int _skippedTicks = 0;
 	private int _inputQueueSize = 0;
 
 #nullable enable
-	private byte? _lastInputProcessed = null;
+	private PlayerInput? _lastInputProcessed = null;
 #nullable disable
 
 	public override void _Process(double delta)
@@ -25,7 +25,7 @@ public partial class ServerPlayer : CharacterBody3D
 
 	public void ProcessPendingCommands(int currentTick)
 	{
-		if (_pendingInputs.TryGetValue(currentTick, out byte input))
+		if (_pendingInputs.TryGetValue(currentTick, out PlayerInput input))
 		{
 			AdvancePhysics(input);
 			_lastInputProcessed = input;
@@ -37,16 +37,16 @@ public partial class ServerPlayer : CharacterBody3D
 
 			_inputQueueSize = _pendingInputs.Count;
 		}
-		else if (_lastInputProcessed.HasValue)
+		else if (_lastInputProcessed != null)
 		{
-			AdvancePhysics((byte)_lastInputProcessed);
+			AdvancePhysics(_lastInputProcessed);
 			_skippedTicks++;
 		}
 	}
 
 	public void PushCommand(NetMessage.UserCommand command)
 	{
-		int offset = command.Inputs.Length - 1;
+		int offset = command.Inputs.Count - 1;
 
 		foreach (var input in command.Inputs)
 		{
@@ -61,13 +61,13 @@ public partial class ServerPlayer : CharacterBody3D
 		}
 	}
 
-	private void AdvancePhysics(byte input)
+	private void AdvancePhysics(PlayerInput input)
 	{
 		this.Velocity = PlayerMovement.ComputeMotion(
 			this.GetRid(),
 			this.GlobalTransform,
 			this.Velocity,
-			PlayerMovement.InputToDirection(input));
+			PlayerMovement.InputToDirection(input.Key));
 
 		Position += this.Velocity * PlayerMovement.FrameDelta;
 	}
