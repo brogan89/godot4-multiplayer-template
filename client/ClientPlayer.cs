@@ -5,6 +5,7 @@ using System;
 using ImGuiNET;
 using MemoryPack;
 using System.Linq;
+using Networking.Utils;
 
 /*
     Main player script, send movement packets to the server, does CSP, and reconciliation. 
@@ -121,7 +122,7 @@ public partial class ClientPlayer : CharacterBody3D
         {
             byte[] data = MemoryPackSerializer.Serialize<NetMessage.ICommand>(userCmd);
 
-            (Multiplayer as SceneMultiplayer).SendBytes(data, 1,
+            (Multiplayer as SceneMultiplayer).SendBytesCompressed(data, 1,
                 MultiplayerPeer.TransferModeEnum.Unreliable, 0);
         }
     }

@@ -2,6 +2,7 @@ using Godot;
 using ImGuiNET;
 using MemoryPack;
 using System.Linq;
+using Networking.Utils;
 
 //
 public partial class ServerManager : Node
@@ -9,7 +10,7 @@ public partial class ServerManager : Node
 	[Export] private int _port = 9999;
 
 	private SceneMultiplayer _multiplayer = new();
-	private Godot.Collections.Array<Godot.Node> entityArray;
+	private Godot.Collections.Array<Godot.Node> entityArray = new();
 	private ServerClock _serverClock;
 
 	private int _currentTick = 0;
@@ -58,14 +59,14 @@ public partial class ServerManager : Node
 
 		byte[] data = MemoryPackSerializer.Serialize<NetMessage.ICommand>(snapshot);
 
-		_multiplayer.SendBytes(data, 0,
+		_multiplayer.SendBytesCompressed(data, 0,
 			MultiplayerPeer.TransferModeEnum.Unreliable, 0);
 	}
 
 	// Route received Input package to the correspondant Network ID
 	private void OnPacketReceived(long id, byte[] data)
 	{
-		var command = MemoryPackSerializer.Deserialize<NetMessage.ICommand>(data);
+		var command = data.DecompressMessage();
 		if (command is NetMessage.UserCommand userCommand)
 		{
 			ServerPlayer player = GetNode($"/root/Main/EntityArray/{id}") as ServerPlayer; //FIXME: do not use GetNode here

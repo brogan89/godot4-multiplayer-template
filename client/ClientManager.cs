@@ -1,6 +1,6 @@
 using Godot;
 using ImGuiNET;
-using MemoryPack;
+using Networking.Utils;
 
 /*
 	Network manager for the client, handles server connection and routes packages.
@@ -41,13 +41,13 @@ public partial class ClientManager : Node
 		_clock.ProcessTick();
 		int currentTick = _clock.GetCurrentTick();
 		int currentRemoteTick = _clock.GetCurrentRemoteTick();
-		CustomSpawner.LocalPlayer.ProcessTick(currentRemoteTick);
+		CustomSpawner.LocalPlayer?.ProcessTick(currentRemoteTick);
 		_snapshotInterpolator.ProcessTick(currentTick);
 	}
 
 	private void OnPacketReceived(long id, byte[] data)
 	{
-		var command = MemoryPackSerializer.Deserialize<NetMessage.ICommand>(data);
+		var command = data.DecompressMessage();
 
 		if (command is NetMessage.GameSnapshot snapshot)
 		{
